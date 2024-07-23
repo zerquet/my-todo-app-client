@@ -1,0 +1,23 @@
+<div style="height: 100%;" class="p-2">
+    <div *ngIf="editingTodo; else askUser" class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input [(ngModel)]="editingTodo.title" type="text" class="form-control" id="title" placeholder="Add a title..." aria-describedby="title">
+        <div class="mb-3">
+            <label for="description" class="form-label">Descriptions</label>
+            <textarea [(ngModel)]="editingTodo!.description" class="form-control" id="description" placeholder="Add details..." rows="3"></textarea>
+        </div>
+        <div class="row g-3">
+            <div class="col-auto">
+                <button type="button" class="btn btn-primary" (click)="saveChanges()">Save</button>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-danger" (click)="deleteTodo()">Delete</button>
+            </div>
+        </div>
+    </div>
+      <ng-template #askUser>
+        <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+            Click item to view details
+        </div>
+      </ng-template>
+</div>

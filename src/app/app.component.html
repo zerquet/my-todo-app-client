@@ -1,0 +1,12 @@
+<div class="row" style="height: 100%;">
+  <!--List Section-->
+  <div class="col-6 border-end">
+    <app-list (todoClicked)="onTodoClicked($event)"></app-list>
+  </div>
+
+  <!--Edit Section-->
+  <div class="col-6">
+    <app-edit (todoUpdated)="onTodoUpdated($event)" (todoDeleted)="onTodoDeleted($event)"></app-edit>
+  </div>
+</div>
+<router-outlet></router-outlet>

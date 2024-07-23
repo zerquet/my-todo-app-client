@@ -1,0 +1,16 @@
+<div class="p-2">
+    <!--Create todo item Section-->
+    <div>
+      <h1>Your Inbox</h1>
+    </div>
+    <div class="mb-3">
+      <input [(ngModel)]="newTodoItem" type="text" class="form-control" placeholder="Add a new item. Press Enter to save." (keydown.enter)="addTodo()"/>
+    </div>
+    
+    <!--List-->
+    <div>
+        <ul class="list-group">
+          <li *ngFor="let todo of todos" class="list-group-item" (click)="setEditing(todo)">{{ todo.title }}</li>
+        </ul>
+    </div>
+</div>
