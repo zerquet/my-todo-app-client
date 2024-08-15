@@ -1,4 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Router } from '@angular/router';
 import { Todo } from 'src/app/models/todo.model';
 import { TodoService } from 'src/app/services/todo.service';
 
@@ -12,8 +13,9 @@ export class ListComponent implements OnInit {
   todos: Array<Todo> = [];
   newTodoItem: string = "";
   nextId: number = 1;
+  username: string = "";
   
-  constructor(private todoService: TodoService) {}
+  constructor(private todoService: TodoService, private router: Router) {}
   
   @Output() todoClicked = new EventEmitter<Todo>();
 

@@ -2,3 +2,27 @@
 html, body {
     height: 100%;
 }
+
+#todo-side-nav a {
+    cursor: pointer;
+}
+
+#user-pfp {
+    height: 150px;
+    width: 150px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    border: 1px solid black; 
+    border-radius: 50%;
+}
+
+#user-pfp-menu {
+    height: 45px;
+    width: 45px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    border: 1px solid black; 
+    border-radius: 50%;
+}

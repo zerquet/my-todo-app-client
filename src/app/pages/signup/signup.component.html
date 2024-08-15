@@ -1,13 +1,39 @@
-<div>
-    <form>
+<div class="row pt-2 justify-content-center align-items-center" style="height: 100%;">
+    <div class="col-4">
+      <div>
+        <h2>Sign up</h2>
+      </div>
+      <form #signupForm="ngForm" (ngSubmit)="onSubmit(signupForm)">
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" [(ngModel)]="user.username" name="username" #username="ngModel" class="form-control" id="username" required>
+          <div *ngIf="username.invalid && (username.dirty || username.touched)" class="text-danger">
+            <div *ngIf="username.hasError('required')">Username is required.</div>
+          </div>
+        </div>
         <div class="mb-3">
           <label for="email" class="form-label">Email address</label>
-          <input type="email" class="form-control" id="email">
+          <input type="text" [(ngModel)]="user.email" name="email" class="form-control" id="email" required>
         </div>
         <div class="mb-3">
           <label for="password" class="form-label">Password</label>
-          <input type="password" class="form-control" id="password">
+          <input type="password" [(ngModel)]="user.password" name="password" #password="ngModel" class="form-control" id="password" required pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$">
+          <div *ngIf="password.invalid && (password.dirty || password.touched)" class="text-danger">
+            <div *ngIf="password.hasError('required')">Password is required.</div>
+            <div *ngIf="password.hasError('pattern')">Password must have min 8 characters, no symbols, and at least one letter and one number.</div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="verify" class="form-label">Verify password</label>
+          <input type="password" [(ngModel)]="user.verifiedPassword" name="verifiedPassword" class="form-control" id="verify" required>
+          <div *ngIf="passwordsMatch === false" class="text-danger">
+            <div>Passwords don't match.</div>
+          </div>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
+        <div class="mt-2">
+          <small>Already have an account? <a href="./login">Log in instead</a></small>
+        </div>
       </form>
+    </div>
 </div>

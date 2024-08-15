@@ -1,0 +1,27 @@
+<div class="row pt-2 justify-content-center align-items-center" style="height: 100%;">
+    <div class="col-4">
+      <div>
+        <h2>Log in</h2>
+      </div>
+      <form #logInForm="ngForm" (ngSubmit)="onSubmit(logInForm)">
+        <div class="mb-3">
+          <label for="email" class="form-label">Email address</label>
+          <input type="text" [(ngModel)]="user.email" name="email" #email="ngModel" class="form-control" id="email" required>
+          <div *ngIf="email.invalid && (email.dirty || email.touched)" class="text-danger">
+            <div *ngIf="email.hasError('required')">Email is required.</div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" [(ngModel)]="user.password" name="password" #password="ngModel" class="form-control" id="password" required>
+          <div *ngIf="password.invalid && (password.dirty || password.touched)" class="text-danger">
+            <div *ngIf="password.hasError('required')">Password is required.</div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <div class="mt-2">
+          <small>No account? <a href="./signup">Sign up now</a></small>
+        </div>
+      </form>
+    </div>
+</div>

@@ -1,0 +1,33 @@
+<div class="row" style="height: 100%;">
+    <!--Side Nav-->
+    <div id="todo-side-nav" class="col-auto border-end pe-0">
+        <app-menu></app-menu>
+    </div>
+    <!--Profile Section-->
+    <div class="col-11 mt-2">
+        <h3>Edit Profile</h3>
+        <form name="editProfileForm" #editProfileForm="ngForm" (ngSubmit)="saveChanges(editProfileForm)">
+            <img id="user-pfp" [src]="account.profilePictureUrl" alt="Profile Picture"/>
+            <div class="input-group mt-3">
+                <label class="input-group-text" for="pfp">Edit profile picture</label>
+                <input #pfpFileInput type="file" class="form-control" (change)="onPfpSelected($event)" id="pfp" name="pfp" accept=".jpeg, .jpg" >
+            </div>
+            <div class="mb-3">
+                <small>Images that are less than 1MB, 1:1 size ratio, and of .jpeg/jpg type are required.</small>
+                <small class="text-danger" *ngIf="errorMessage"> {{ errorMessage }} </small>
+            </div>
+            <label for="username" class="form-label">Username</label>
+            <input [(ngModel)]="account.username" type="text" class="form-control" id="username" name="username" placeholder="account.username" aria-describedby="username">
+            
+            <div class="row g-3 mt-3">
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+            <div>
+                <small class="text-danger" *ngIf="this.onSubmitErrorMessage"> {{ onSubmitErrorMessage }}</small>
+            </div>
+        </form>
+        <small *ngIf="showSuccessMessage" class="text-success">Saved changes!</small>
+    </div>
+</div>

@@ -1,0 +1,15 @@
+<div class="row" style="height: 100%;">
+    <!--Side Nav-->
+    <div id="todo-side-nav" class="col-auto border-end pe-0">
+      <app-menu></app-menu>
+    </div>
+    <!--List Section-->
+    <div class="col-6 border-end">
+      <app-list (todoClicked)="onTodoClicked($event)"></app-list>
+    </div>
+  
+    <!--Edit Section-->
+    <div class="col-5">
+      <app-edit (todoUpdated)="onTodoUpdated($event)" (todoDeleted)="onTodoDeleted($event)"></app-edit>
+    </div>
+</div>

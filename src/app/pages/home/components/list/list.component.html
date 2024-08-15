@@ -1,0 +1,18 @@
+<div class="p-2">
+    <!--Create todo item Section-->
+    <div class="row">
+      <div class="col-auto">
+        <h3>Welcome, {{ username }}</h3>
+      </div>
+    </div>
+    <div class="mb-3">
+      <input [(ngModel)]="newTodoItem" type="text" class="form-control" placeholder="Add a new item. Press Enter to save." (keydown.enter)="addTodo()"/>
+    </div>
+    
+    <!--List-->
+    <div>
+        <div class="list-group">
+          <a href="javascript:void(0);" *ngFor="let todo of todos" class="list-group-item list-group-item-action" (click)="setEditing(todo)">{{ todo.title }}</a>
+        </div>
+    </div>
+</div>
