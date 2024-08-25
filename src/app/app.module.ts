@@ -13,6 +13,7 @@ import { HomeComponent } from './pages/home/home.component';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { MenuComponent } from './shared/components/menu/menu.component';
+import { SidepanelComponent } from './pages/home/components/sidepanel/sidepanel.component';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import { MenuComponent } from './shared/components/menu/menu.component';
     HomeComponent,
     ProfileComponent,
     MenuComponent,
+    SidepanelComponent,
   ],
   imports: [
     BrowserModule,

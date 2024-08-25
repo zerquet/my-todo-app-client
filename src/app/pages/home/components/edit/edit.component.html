@@ -6,6 +6,11 @@
             <label for="description" class="form-label">Descriptions</label>
             <textarea [(ngModel)]="editingTodo!.description" class="form-control" id="description" placeholder="Add details..." rows="3"></textarea>
         </div>
+        <label for="list">List</label>
+        <select class="form-select mb-3" id="list" aria-label="Select list" [(ngModel)]="editingTodo!.todoListId">
+            <option [ngValue]="null">None</option>
+            <option *ngFor="let list of availableLists" [value]="list.id">{{list.title}}</option>
+        </select>
         <div class="row g-3">
             <div class="col-auto">
                 <button type="button" class="btn btn-primary" (click)="saveChanges()">Save</button>

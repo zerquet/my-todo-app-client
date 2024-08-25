@@ -20,11 +20,19 @@ export class TodoService {
     return this.http.get<Todo[]>(BASE_URL);
   }
 
+  countTotal(): Observable<number> {
+    return this.http.get<number>(`${BASE_URL}/count`);
+  }
+
   updateTodo(todo: Todo): Observable<void> {
     return this.http.put<void>(`${BASE_URL}/${todo.id}`, todo);
   }
 
   deleteTodo(id: number): Observable<void> {
     return this.http.delete<void>(`${BASE_URL}/${id}`);
+  }
+
+  deleteTodos(ids: number[]): Observable<void> {
+    return this.http.delete<void>(BASE_URL, { body: ids});
   }
 }

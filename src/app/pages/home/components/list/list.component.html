@@ -1,18 +1,52 @@
 <div class="p-2">
-    <!--Create todo item Section-->
-    <div class="row">
-      <div class="col-auto">
-        <h3>Welcome, {{ username }}</h3>
+  <!-- List title section -->
+  <div id="list-title-container" class="row">
+    <div class="col-auto">
+      <h4 *ngIf="!editListMode; else showEditListField">{{ currentList }} </h4>
+      <ng-template #showEditListField>
+        <input [(ngModel)]="newListTitle" type="text" class="form-control form-control-sm mb-2" [placeholder]="currentList" (keydown.enter)="updateListTitle()">
+      </ng-template>
+    </div>
+    <div *ngIf="currentListId !== undefined" class="col-auto ps-0">
+      <i *ngIf="!editListMode; else showCancelEdit" class="bi bi-pencil-fill align-middle hoverable" style="font-size: 1rem;" (click)="toggleEditListMode()"></i>&nbsp;
+      <ng-template #showCancelEdit>
+        <i class="bi bi-x align-middle hoverable" style="font-size: 1.5rem;" (click)="toggleEditListMode()"></i>
+      </ng-template>
+      <i class="bi bi-trash-fill align-middle hoverable" style="font-size: 1rem;" data-bs-toggle="modal" data-bs-target="#confirmDeleteListModal"></i>
+    </div>
+  </div>
+  <!--Create todo item Section-->
+  <div class="mb-3">
+    <input [(ngModel)]="newTodoItem" type="text" class="form-control" placeholder="Add a new item. Press Enter to save." (keydown.enter)="addTodo()"/>
+  </div>
+    
+  <!--List-->
+  <div>
+      <div class="list-group">
+        <a href="javascript:void(0);" *ngFor="let todo of todos" class="list-group-item list-group-item-action" (click)="setEditing(todo)" [ngClass]="todo.id === selectedTodoItem ? 'text-primary' : ''">
+          {{ todo.title }}
+        </a>
+      </div>
+  </div>
+</div>
+
+<!-- Confirm Delete List Modal -->
+<div class="modal fade" id="confirmDeleteListModal" tabindex="-1" aria-labelledby="confirmDeleteListModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="confirmDeleteListModalLabel">Delete list '{{ currentList }}'?</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Please select what you would like to do with the todo items in this list.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" (click)="deleteList(false)">Delete & keep items</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" (click)="deleteList(true)">Delete list & items</button>
       </div>
     </div>
-    <div class="mb-3">
-      <input [(ngModel)]="newTodoItem" type="text" class="form-control" placeholder="Add a new item. Press Enter to save." (keydown.enter)="addTodo()"/>
-    </div>
-    
-    <!--List-->
-    <div>
-        <div class="list-group">
-          <a href="javascript:void(0);" *ngFor="let todo of todos" class="list-group-item list-group-item-action" (click)="setEditing(todo)">{{ todo.title }}</a>
-        </div>
-    </div>
+  </div>
 </div>
+

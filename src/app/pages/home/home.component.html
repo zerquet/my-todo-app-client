@@ -3,13 +3,19 @@
     <div id="todo-side-nav" class="col-auto border-end pe-0">
       <app-menu></app-menu>
     </div>
+    <!--Side Panel (List and tags section)-->
+    <div class="col-3 border-end">
+      <app-sidepanel (listClicked)="onListClicked($event)" (listChanged)="onListChanged()"></app-sidepanel>
+    </div>
     <!--List Section-->
-    <div class="col-6 border-end">
-      <app-list (todoClicked)="onTodoClicked($event)"></app-list>
+    <div class="col-4 border-end">
+      <app-list (todoClicked)="onTodoClicked($event)" (todoAdded)="onTodoAddedOrDeleted($event)" (listTitleUpdated)="onListTitleUpdated($event)" (listDeleted)="onListDeleted($event)"
+                (listDeletedCascade)="onListDeletedCascade($event)">
+      </app-list>
     </div>
   
     <!--Edit Section-->
-    <div class="col-5">
-      <app-edit (todoUpdated)="onTodoUpdated($event)" (todoDeleted)="onTodoDeleted($event)"></app-edit>
+    <div class="col-4">
+      <app-edit (todoUpdated)="onTodoUpdated($event)" (todoDeleted)="onTodoDeleted($event)" (todoDeleted2)="onTodoAddedOrDeleted($event)" (todoListChanged)="onTodoListChanged($event)"></app-edit>
     </div>
 </div>
