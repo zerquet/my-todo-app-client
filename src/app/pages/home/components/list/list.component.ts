@@ -1,7 +1,10 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
+import { Tag } from 'src/app/models/tag.model';
+import { TagColor } from 'src/app/models/tagColor.model';
 import { Todo } from 'src/app/models/todo.model';
 import { TodoList } from 'src/app/models/todolist.model';
+import { TagService } from 'src/app/services/tag.service';
 import { TodoService } from 'src/app/services/todo.service';
 import { TodolistService } from 'src/app/services/todolist.service';
 
@@ -20,28 +23,41 @@ export class ListComponent implements OnInit {
   editListMode: boolean = false;
   newListTitle: string = "";
   selectedTodoItem: number | undefined;
+  tagMode: boolean = false;
+  currentTag: Tag | null = null;
+  tagColorOptions: TagColor[] = [];
+  editingTag: Tag | null = null;
 
   
-  constructor(private todoService: TodoService, private todoListService: TodolistService, private router: Router) {}
+  constructor(private todoService: TodoService, private todoListService: TodolistService, private tagService: TagService,
+     private router: Router) {}
   
   @Output() todoClicked = new EventEmitter<Todo>();
   @Output() todoAdded = new EventEmitter<{listId: number | undefined, value: number}>();
   @Output() listTitleUpdated = new EventEmitter<TodoList>();
   @Output() listDeleted = new EventEmitter<number>();
   @Output() listDeletedCascade = new EventEmitter<number>();
+  @Output() tagUpdated = new EventEmitter<Tag>();
+  @Output() tagDeleted = new EventEmitter<number>();
 
   ngOnInit(): void {
     this.loadTodos(undefined);
     this.currentList = "Inbox";
     this.currentListId = undefined;
+    this.loadTagColors();
   }
 
   addTodo(): void {
     if(this.newTodoItem.trim() != "") {
       const todo: Todo = { 
         title: this.newTodoItem.trim(),
-        todoListId: this.currentListId
+        todoListId: this.currentListId,
+        tags: [],
+        newTags: []
       };
+      if(this.tagMode) {
+        todo.newTags.push(this.currentTag?.id!);
+      }
       console.log(todo);
 
       this.todoService.createTodo(todo).subscribe(
@@ -64,6 +80,7 @@ export class ListComponent implements OnInit {
   }
 
   updateList(todo: Todo): void {
+    debugger;
     //Todo was removed from current list
     if((todo.todoListId !== this.currentListId) && this.currentList != "Inbox") {
       this.todos = this.todos.filter(i => i.id !== todo.id);
@@ -71,6 +88,9 @@ export class ListComponent implements OnInit {
     const index: number = this.todos.findIndex(i => i.id == todo.id);
     if(index !== -1) {
       this.todos[index] = { ...todo }; //NOTE: Using spread operator to create clone for the same (though vice-versa) reason as in loadTodo() in edit.component.ts
+    }
+    if(this.tagMode && !todo.newTags.some(t => t === this.currentTag?.id)) {
+      this.todos = this.todos.filter(t => t.id !== todo.id);
     }
   }
 
@@ -98,6 +118,15 @@ export class ListComponent implements OnInit {
       )
     }
 
+  }
+
+  loadTodosByTag(tagId: number): void {
+    this.tagService.getTag(tagId).subscribe(
+      (retrievedTag) => {
+        debugger;
+        this.todos = retrievedTag.todoItems;
+      }
+    )
   }
 
   toggleEditListMode(): void {
@@ -152,6 +181,76 @@ export class ListComponent implements OnInit {
         }
       )
     }
+  }
+
+  updateTag(): void {
+    debugger;
+    if(this.editingTag?.name!.trim() !== "") {
+      this.tagService.updateTag(this.editingTag!).subscribe(
+        () => {
+          this.currentTag!.name = this.editingTag?.name!;
+          this.tagUpdated.emit(this.editingTag!);
+          this.currentTag!.colorCode = this.editingTag?.colorCode!;
+        }
+      )
+    }
+  }
+
+  deleteTag(): void {
+    this.tagService.deleteTag(this.currentTag?.id!).subscribe(
+      () => {
+        this.loadTodos(undefined);
+        this.tagDeleted.emit(this.currentTag?.id);
+        this.currentList = "Inbox";
+        this.currentListId = undefined;
+        this.currentTag = null;
+      }
+    )
+  }
+
+  tagExistsInTodoTagCollection(todo: Todo): boolean {
+    return todo.tags.includes(this.currentTag!);
+  }
+
+  loadTagColors(): void {
+    this.tagColorOptions = [
+      {
+        name: "red",
+        hexCode: "#f55e51"
+      },
+      {
+        name: "orange",
+        hexCode: "#ebb84b"
+      },
+      {
+        name: "yellow",
+        hexCode: "#d5de2a"
+      },
+      {
+        name: "green",
+        hexCode: "#8ade31"
+      },
+      {
+        name: "turquoise",
+        hexCode: "#30bfaf"
+      },
+      {
+        name: "blue",
+        hexCode: "#4391e6"
+      },
+      {
+        name: "purple",
+        hexCode: "#803ed6"
+      },
+      {
+        name: "brown",
+        hexCode: "#634932"
+      },
+      {
+        name: "gray",
+        hexCode: "#999999"
+      }
+    ]
   }
 
   private todoItemExists(title: string): boolean {

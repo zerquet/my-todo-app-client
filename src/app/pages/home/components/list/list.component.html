@@ -1,6 +1,6 @@
-<div class="p-2">
+<div class="p-2" style="height: 81%;">
   <!-- List title section -->
-  <div id="list-title-container" class="row">
+  <div *ngIf="!tagMode; else showTagInfo" id="list-title-container" class="row">
     <div class="col-auto">
       <h4 *ngIf="!editListMode; else showEditListField">{{ currentList }} </h4>
       <ng-template #showEditListField>
@@ -15,19 +15,38 @@
       <i class="bi bi-trash-fill align-middle hoverable" style="font-size: 1rem;" data-bs-toggle="modal" data-bs-target="#confirmDeleteListModal"></i>
     </div>
   </div>
+  <!-- Tag title section (else)-->
+   <ng-template #showTagInfo>
+    <div id="tag-title-container" class="row">
+      <div class="col-auto">
+        <h4><i class="bi bi-tag-fill" style="font-size: 1.4rem;" [ngStyle]="{'color': currentTag?.colorCode}"></i> {{ currentTag?.name }} </h4>
+      </div>
+      <div class="col-auto ps-0">
+        <i class="bi bi-pencil-fill align-middle hoverable" style="font-size: 1rem;" data-bs-toggle="modal" data-bs-target="#editTagModal" ></i>&nbsp;
+        <i class="bi bi-trash-fill align-middle hoverable" style="font-size: 1rem;" data-bs-toggle="modal" data-bs-target="#confirmDeleteTagModal"></i>
+      </div>
+    </div>
+   </ng-template>
   <!--Create todo item Section-->
   <div class="mb-3">
     <input [(ngModel)]="newTodoItem" type="text" class="form-control" placeholder="Add a new item. Press Enter to save." (keydown.enter)="addTodo()"/>
   </div>
     
   <!--List-->
-  <div>
+  <div *ngIf="todos.length > 0; else addItemMessage;">
       <div class="list-group">
         <a href="javascript:void(0);" *ngFor="let todo of todos" class="list-group-item list-group-item-action" (click)="setEditing(todo)" [ngClass]="todo.id === selectedTodoItem ? 'text-primary' : ''">
-          {{ todo.title }}
+          <div>{{ todo.title }}</div>
+          <small *ngIf="!tagExistsInTodoTagCollection(todo) && tagMode" [ngStyle]="{'color': currentTag?.colorCode}">#{{currentTag?.name}} </small>
+          <small *ngFor="let tag of todo.tags" [ngStyle]="{'color': tag.colorCode}">#{{tag.name}} </small>
         </a>
       </div>
   </div>
+  <ng-template #addItemMessage>
+    <div class="d-flex justify-content-center align-items-center text-secondary" style="height: 100%;">
+      Start by adding a todo item.
+  </div>
+  </ng-template>
 </div>
 
 <!-- Confirm Delete List Modal -->
@@ -50,3 +69,55 @@
   </div>
 </div>
 
+<!-- Edit Tag Modal -->
+<div *ngIf="editingTag" class="modal fade" id="editTagModal" tabindex="-1" aria-labelledby="editTagModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="editTagModalLabel">Edit tag</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">  
+          <label for="editName" class="form-label">Name</label>
+          <input [(ngModel)]="editingTag!.name" type="text" class="form-control form-control-sm" id="editName">
+        </div>
+
+        <label class="form-label">Color</label>
+        <div>
+          <div *ngFor="let tagColor of tagColorOptions" class="form-check form-check-inline">
+            <!--Color automatically selected if tagColor.hexCode matches current tag's color-->
+            <input [(ngModel)]="editingTag.colorCode" class="form-check-input" type="radio" name="tagColor" [id]="tagColor.name" [value]="tagColor.hexCode"> 
+            <label class="form-check-label" [for]="tagColor.name">
+              <i class="bi bi-tag-fill" style="font-size: 1.4rem;" [ngStyle]="{'color': tagColor.hexCode}"></i>
+            </label>
+          </div>
+        </div>
+          
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" (click)="updateTag()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Tag Modal -->
+<div class="modal fade" id="confirmDeleteTagModal" tabindex="-1" aria-labelledby="confirmDeleteTagModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="confirmDeleteTagModalLabel">Delete tag '{{ currentTag?.name }}'?</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Todo items with this tag will be unassigned this tag.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" (click)="deleteTag()">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>

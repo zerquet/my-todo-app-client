@@ -11,6 +11,28 @@
             <option [ngValue]="null">None</option>
             <option *ngFor="let list of availableLists" [value]="list.id">{{list.title}}</option>
         </select>
+        <label for="tags" class="form-label">Tags</label>
+        <div class="row mb-3">
+            <div *ngFor="let addedTag of addedTags" class="col-auto px-1">
+                <span class="badge rounded-pill d-flex justify-content-center" [ngStyle]="{'background-color': addedTag.colorCode}">
+                    <div>{{addedTag.name}}</div> <i class="bi bi-x hoverable" style="font-size: 0.9rem;" (click)="updateAddedTags(addedTag)"></i>
+                </span>
+            </div>
+        </div>
+        <div class="dropdown mb-3">
+            <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Add tag
+            </button>
+            <ul class="dropdown-menu">
+                <li *ngFor="let tag of availableTags">
+                    <a class="dropdown-item" href="javascript:void(0);" (click)="updateAddedTags(tag)">
+                        <i class="bi bi-tag-fill" [ngStyle]="{'color': tag.colorCode}"></i> {{tag.name}} 
+                        <i *ngIf="tagIsSelected(tag)" class="bi bi-check-lg float-end ps-5" style="color: green;"></i>
+                    </a>
+                </li>
+            </ul>
+          </div>
+
         <div class="row g-3">
             <div class="col-auto">
                 <button type="button" class="btn btn-primary" (click)="saveChanges()">Save</button>
@@ -21,7 +43,7 @@
         </div>
     </div>
       <ng-template #askUser>
-        <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+        <div class="d-flex justify-content-center align-items-center text-secondary" style="height: 100%;">
             Click item to view details
         </div>
       </ng-template>

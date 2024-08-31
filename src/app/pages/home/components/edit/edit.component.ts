@@ -1,6 +1,8 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Tag } from 'src/app/models/tag.model';
 import { Todo } from 'src/app/models/todo.model';
 import { TodoList } from 'src/app/models/todolist.model';
+import { TagService } from 'src/app/services/tag.service';
 import { TodoService } from 'src/app/services/todo.service';
 import { TodolistService } from 'src/app/services/todolist.service';
 
@@ -14,8 +16,10 @@ export class EditComponent {
   editingTodo: Todo | null = null;
   availableLists: TodoList[] = [];
   previousListId: number | undefined = undefined;
+  availableTags: Tag[] = [];
+  addedTags: Tag[] = [];
   
-  constructor(private todoService: TodoService, private todoListService: TodolistService) { }
+  constructor(private todoService: TodoService, private todoListService: TodolistService, private tagService: TagService) { }
   
   //todoDeleted sends data to ListComponent. todoDeleted2 sends data to SidepanelComponent.
   @Output() todoDeleted = new EventEmitter<number>();
@@ -25,8 +29,34 @@ export class EditComponent {
 
 
   loadTodo(todo: Todo): void {
-    this.editingTodo = { ...todo };
-    this.previousListId = this.editingTodo.todoListId;
+    this.addedTags = [];
+    debugger;
+    //this.editingTodo = { ...todo };
+    //NOTE: Calling API to retrieve tags from Todo item as well. 
+    this.todoService.getTodo(todo.id!).subscribe(
+      (retrievedTodo) => {
+        this.editingTodo = retrievedTodo;
+
+        //Subscribe code block for GetTags needs to run after the todo has been retrieved, therefore the nesting.
+        //This ensures the todo's tags is ready by the time we run the forEach method, given subscribe()'s async nature
+        this.tagService.getTags().subscribe(
+          (retrievedTags) => {
+            this.availableTags = retrievedTags;
+            
+            retrievedTodo?.tags.forEach(tag => {
+              let tagMatch = this.availableTags.find(t => t.id === tag.id);
+              if(tagMatch !== undefined) {
+                this.addedTags.push(tagMatch);
+              }
+            })
+
+          }
+        )
+
+        this.previousListId = this.editingTodo.todoListId;
+
+      }
+    ) //work on removing tags w 'x' in edit component. Make sure saving todo with updated tags works. make sure a todo item can have a list and tags. 
 
     /** NOTE: Spreading properties of 'todo' to create clone instead of directly referencing the passed-in todo from the list component. 
      *  Otherwise, changes are reflected live on list (or any 'source' component) and could confuse users on whether it's saving the changes or not.
@@ -41,8 +71,12 @@ export class EditComponent {
   }
 
   saveChanges(): void {
+    debugger;
+    this.editingTodo!.newTags = this.addedTags.map(tag => tag.id!);
     this.todoService.updateTodo(this.editingTodo!).subscribe(
       () => {
+        //Setting tags to addedTags so updated tag list is reflected on ListComponent
+        this.editingTodo!.tags = [...this.addedTags];
         this.todoUpdated.emit(this.editingTodo!);
         debugger;
         //*Update list counters*//
@@ -76,5 +110,20 @@ export class EditComponent {
         this.editingTodo = null;
       }
     )
+  }
+
+  updateAddedTags(tag: Tag): void {
+    debugger;
+    const isTagAdded = this.tagIsSelected(tag);
+    if(!isTagAdded) {
+      this.addedTags.push(tag);
+    } else {
+      //Remove tag from collection
+      this.addedTags = this.addedTags.filter(x => x !== tag);
+    }
+  }
+
+  tagIsSelected(tag: Tag): boolean {
+    return this.addedTags.includes(tag);
   }
 }
