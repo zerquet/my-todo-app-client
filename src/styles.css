@@ -34,3 +34,7 @@ html, body {
 .hoverable:hover {
     opacity: 0.9;
 }
+
+#sort-button:hover {
+    color: black;
+}

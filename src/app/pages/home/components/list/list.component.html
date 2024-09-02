@@ -31,6 +31,12 @@
   <div class="mb-3">
     <input [(ngModel)]="newTodoItem" type="text" class="form-control" placeholder="Add a new item. Press Enter to save." (keydown.enter)="addTodo()"/>
   </div>
+  <!-- Sort option -->
+  <div class="d-flex flex-row-reverse text-secondary hoverable" (click)="toggleSortAlpha()">
+    <small id="sort-button">Sort <i *ngIf="this.sortAlphaOption === 'desc'; else showDescIcon" class="bi bi-sort-alpha-down"></i>
+      <ng-template #showDescIcon><i class="bi bi-sort-alpha-up-alt"></i></ng-template>
+    </small>
+  </div>
     
   <!--List-->
   <div *ngIf="todos.length > 0; else addItemMessage;">

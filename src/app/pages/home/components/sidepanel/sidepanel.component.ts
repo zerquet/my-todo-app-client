@@ -19,6 +19,7 @@ export class SidepanelComponent implements OnInit {
   tags: Array<Tag> = [];
   newTag: string = "";
   selectedTag: number = 0;
+  isMenuCollapsed: boolean = false;
 
   constructor(private todoListService: TodolistService, private todoService: TodoService, private tagService: TagService) {}
 
@@ -128,6 +129,10 @@ export class SidepanelComponent implements OnInit {
       }
     )
     
+  }
+
+  toggleCollapseMenu(): void {
+    this.isMenuCollapsed = !this.isMenuCollapsed;
   }
 
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { Todo } from '../../models/todo.model';
 import { EditComponent } from './components/edit/edit.component';
 import { ListComponent } from './components/list/list.component';
@@ -14,14 +14,17 @@ import { Tag } from 'src/app/models/tag.model';
   styles: [
   ]
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, AfterViewChecked {
   @ViewChild(EditComponent) editChild!:EditComponent;
   @ViewChild(ListComponent) listChild!:ListComponent;
   @ViewChild(SidepanelComponent) sidePanelChild!:SidepanelComponent;
+  editChildIsNull: boolean = false;
+  sideMenuIsCollapsed: boolean = false;
+
 
   title = 'my-todo-app';
 
-  constructor(private profileService: ProfileService, private router: Router) { }
+  constructor(private profileService: ProfileService, private router: Router, private cdref: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     //Home component gets account info and passes it to child components. Move to app.component.ts?
@@ -35,6 +38,13 @@ export class HomeComponent implements OnInit {
         this.router.navigate(["/login"]);
       }
     );
+
+  }
+  
+  ngAfterViewChecked(): void {
+    this.editChildIsNull = this.editChild.editingTodo === null;
+    this.sideMenuIsCollapsed = this.sidePanelChild.isMenuCollapsed;
+    this.cdref.detectChanges();
   }
 
   onTodoClicked(todo: Todo): void {

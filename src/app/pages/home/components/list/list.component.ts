@@ -27,6 +27,7 @@ export class ListComponent implements OnInit {
   currentTag: Tag | null = null;
   tagColorOptions: TagColor[] = [];
   editingTag: Tag | null = null;
+  sortAlphaOption: string = "asc";
 
   
   constructor(private todoService: TodoService, private todoListService: TodolistService, private tagService: TagService,
@@ -210,6 +211,29 @@ export class ListComponent implements OnInit {
 
   tagExistsInTodoTagCollection(todo: Todo): boolean {
     return todo.tags.includes(this.currentTag!);
+  }
+
+  toggleSortAlpha(): void {
+    if(this.sortAlphaOption === "asc") {
+      this.sortAlphaOption = "desc";
+
+      this.todos.sort(function(a, b) {
+        var textA = a.title!.toUpperCase();
+        var textB = b.title!.toUpperCase();
+        return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+      }).reverse();
+
+    } 
+    else if (this.sortAlphaOption === "desc") {
+      this.sortAlphaOption = "asc";
+      this.todos.sort(function(a, b) {
+        var textA = a.title!.toUpperCase();
+        var textB = b.title!.toUpperCase();
+        return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+      });
+
+    }
+    
   }
 
   loadTagColors(): void {
