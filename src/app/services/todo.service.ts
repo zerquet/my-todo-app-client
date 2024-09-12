@@ -24,8 +24,20 @@ export class TodoService {
     return this.http.get<Todo[]>(BASE_URL);
   }
 
+  getDueToday(): Observable<Todo[]> {
+    return this.http.get<Todo[]>(`${BASE_URL}/getDueToday`);
+  }
+
   countTotal(): Observable<number> {
     return this.http.get<number>(`${BASE_URL}/count`);
+  }
+
+  countCompleted(): Observable<number> {
+    return this.http.get<number>(`${BASE_URL}/completedCount`);
+  }
+
+  countDueToday(): Observable<number> {
+    return this.http.get<number>(`${BASE_URL}/dueTodayCount`);
   }
 
   updateTodo(todo: Todo): Observable<void> {

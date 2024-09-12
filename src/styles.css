@@ -38,3 +38,7 @@ html, body {
 #sort-button:hover {
     color: black;
 }
+
+.strikethrough {
+    text-decoration: line-through;
+}

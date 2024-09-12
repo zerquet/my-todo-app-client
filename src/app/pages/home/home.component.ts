@@ -68,7 +68,29 @@ export class HomeComponent implements OnInit, AfterViewChecked {
       this.listChild.currentListId = undefined;
       //Reset edit panel and selected todo color when Inbox is clicked.
       this.editChild.editingTodo = null;
-    this.listChild.selectedTodoItem = undefined;
+      this.listChild.selectedTodoItem = undefined;
+      this.listChild.resetNoItemMessage();
+    }
+    //Todos due today
+    else if(todoList.id === -2) {
+      this.listChild.loadTodos(-2);
+      this.listChild.tagMode = false;
+      this.listChild.currentList = "Today";
+      this.listChild.currentListId = undefined;
+      this.editChild.editingTodo = null;
+      this.listChild.selectedTodoItem = undefined;
+      this.listChild.noItemsMessage = "No items due today :)"
+    }
+    //Completed todos
+    else if(todoList.id === -3) {
+      this.listChild.loadTodos(-3);
+      this.listChild.tagMode = false;
+      this.listChild.currentList = "Completed";
+      this.listChild.currentListId = undefined;
+      this.editChild.editingTodo = null;
+      this.listChild.selectedTodoItem = undefined;
+      this.listChild.noItemsMessage = "You have no completed items :(";
+      this.listChild.showCompletedList = true;
     }
     //Todos from list
     else {
@@ -76,6 +98,7 @@ export class HomeComponent implements OnInit, AfterViewChecked {
       this.listChild.tagMode = false;
       this.listChild.currentList = todoList.title!; 
       this.listChild.currentListId = todoList.id!;
+      this.listChild.resetNoItemMessage();
     }
     //NOTE: If user adds a todo, they don't expect it to be added to a previously selected tag. So clear the values. 
     this.listChild.currentTag = null;
@@ -94,6 +117,12 @@ export class HomeComponent implements OnInit, AfterViewChecked {
     if(outputModel.listId === undefined || outputModel.listId === null) {
       this.sidePanelChild.totalTodos = this.sidePanelChild.totalTodos + outputModel.value;
     } 
+    else if(outputModel.listId === -2) {
+      this.sidePanelChild.totalDueTodos += outputModel.value;
+    }
+    else if(outputModel.listId === -3) {
+      this.sidePanelChild.totalCompletedTodos += outputModel.value;
+    }
     else {
       const index = this.sidePanelChild.lists.findIndex(list => list.id == outputModel.listId);
       let listToUpdate = this.sidePanelChild.lists.at(index);
@@ -204,4 +233,42 @@ export class HomeComponent implements OnInit, AfterViewChecked {
     this.sidePanelChild.tags = this.sidePanelChild.tags.filter(x => x.id !== id);
     this.sidePanelChild.onInboxClick();
   }
+
+  onTodoCompletedStatusChanged(newCountUpdate: number): void {
+    debugger;
+    this.sidePanelChild.totalCompletedTodos += newCountUpdate;
+  }
+
+  onTodoAddedToTodayList(val: number): void {
+    this.sidePanelChild.totalDueTodos += val;
+  }
+
+  onTodoDueDateChanged(editingTodo: Todo): void {
+    let today = new Date();
+    let todoDueDate = new Date(editingTodo.dueDate!);
+    let todoDueDateIsToday = (todoDueDate.getMonth() + 1) === (today.getMonth() + 1) 
+        && todoDueDate.getFullYear() === today.getFullYear()
+        && todoDueDate.getDate() === today.getDate();
+    
+    if(!todoDueDateIsToday) {
+      //Only remove if todo already exists.
+      if(this.sidePanelChild.dueToday.some(t => t.id === editingTodo.id)) {
+        //move these to a SidepanelComponent function?
+        this.sidePanelChild.dueToday = this.sidePanelChild.dueToday.filter(t => t.id !== editingTodo.id);
+        this.sidePanelChild.totalDueTodos -= 1;
+      }
+    }
+    else {
+      //Only push if editing todo doesn't exist in array
+      if(!this.sidePanelChild.dueToday.some(t => t.id === editingTodo.id)) {
+        this.sidePanelChild.dueToday.push(editingTodo);
+        this.sidePanelChild.totalDueTodos += 1;
+      }
+    }
+  }
+
+  onTodoClickedToggle(): void {
+    this.editChild.editingTodo = null;
+  }
+
 }

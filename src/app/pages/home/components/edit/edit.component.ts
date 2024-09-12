@@ -26,6 +26,7 @@ export class EditComponent {
   @Output() todoUpdated = new EventEmitter<Todo>();
   @Output() todoDeleted2 = new EventEmitter<{listId: number | undefined, value: number}>();
   @Output() todoListChanged = new EventEmitter<{listId: number | undefined, value: number}>();
+  @Output() todoDueDateChanged = new EventEmitter<Todo>();
 
 
   loadTodo(todo: Todo): void {
@@ -92,6 +93,11 @@ export class EditComponent {
             this.todoListChanged.emit({listId: this.previousListId, value: -1});
           }
         }
+
+        if(this.editingTodo?.dueDate !== undefined) {
+          this.todoDueDateChanged.emit(this.editingTodo);
+          
+        }
         
         console.log("Updated ID " + this.editingTodo!.id)
 
@@ -101,12 +107,28 @@ export class EditComponent {
   }
 
   deleteTodo(): void {
+    debugger;
     this.todoService.deleteTodo(this.editingTodo!.id!).subscribe(
       () => {
         this.todoDeleted.emit(this.editingTodo!.id);
         debugger;
         console.log("Deleted ID " + this.editingTodo!.id)
         this.todoDeleted2.emit({listId: this.editingTodo!.todoListId, value: -1});
+        if(this.editingTodo?.dueDate !== undefined) {
+          let today = new Date();
+          let todoDueDate = new Date(this.editingTodo.dueDate);
+          let todoDueDateIsToday = (todoDueDate.getMonth() + 1) === (today.getMonth() + 1) 
+              && todoDueDate.getFullYear() === today.getFullYear()
+              && todoDueDate.getDate() === today.getDate();
+          
+          if(todoDueDateIsToday) {
+            this.todoDeleted2.emit({listId: -2, value: -1})
+          }
+        }
+
+        if(this.editingTodo?.isCompleted) {
+          this.todoDeleted2.emit({listId: -3, value: -1});
+        }
         this.editingTodo = null;
       }
     )

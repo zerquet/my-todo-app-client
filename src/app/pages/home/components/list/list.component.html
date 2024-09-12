@@ -28,7 +28,7 @@
     </div>
    </ng-template>
   <!--Create todo item Section-->
-  <div class="mb-3">
+  <div *ngIf="currentList !== 'Completed'" class="mb-3">
     <input [(ngModel)]="newTodoItem" type="text" class="form-control" placeholder="Add a new item. Press Enter to save." (keydown.enter)="addTodo()"/>
   </div>
   <!-- Sort option -->
@@ -40,18 +40,61 @@
     
   <!--List-->
   <div *ngIf="todos.length > 0; else addItemMessage;">
-      <div class="list-group">
-        <a href="javascript:void(0);" *ngFor="let todo of todos" class="list-group-item list-group-item-action" (click)="setEditing(todo)" [ngClass]="todo.id === selectedTodoItem ? 'text-primary' : ''">
-          <div>{{ todo.title }}</div>
-          <small *ngIf="!tagExistsInTodoTagCollection(todo) && tagMode" [ngStyle]="{'color': currentTag?.colorCode}">#{{currentTag?.name}} </small>
-          <small *ngFor="let tag of todo.tags" [ngStyle]="{'color': tag.colorCode}">#{{tag.name}} </small>
-        </a>
+      <ng-container *ngIf="currentList !== 'Completed'">
+        <div class="list-group">
+          <ng-container *ngFor="let todo of todos">
+            <a href="javascript:void(0);" *ngIf="!todo.isCompleted" class="list-group-item list-group-item-action" [ngClass]="todo.id === selectedTodoItem ? 'text-primary' : ''">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="markCompleted" value="completed" [checked]="todo.isCompleted ? 'checked': ''" (change)="onCheckboxChecked(todo)">
+                <label class="form-check-label" for="markCompleted"></label>
+              </div>
+              <div class="d-inline" [ngClass]="todo.isCompleted ? 'strikethrough text-secondary' : ''" (click)="setEditing(todo)">{{ todo.title }}</div>
+              <div class="ps-4 ms-3">
+                <ng-container *ngIf="tagMode">
+                  <small *ngIf="!tagExistsInTodoTagCollection(todo) && tagMode" [ngStyle]="{'color': currentTag?.colorCode}" [ngClass]="todo.isCompleted ? 'strikethrough text-secondary': ''">#{{currentTag?.name}} </small>
+                </ng-container>
+                <small *ngFor="let tag of todo.tags" [ngStyle]="{'color': tag.colorCode}" [ngClass]="todo.isCompleted ? 'strikethrough text-secondary': ''">#{{tag.name}} </small>
+              </div>
+            </a>
+          </ng-container>
+        </div>
+      </ng-container>
+      <!--Completed List-->
+      <ng-container *ngIf="currentList !== 'Completed'">
+        <div class="d-flex justify-content-center mt-4 mb-3">
+          <button #completedDiv class="btn" [ngClass]="showCompletedList ? 'btn-secondary': 'btn-primary'" [disabled]="completedCount === 0" type="button" data-bs-toggle="collapse" data-bs-target="#completedListCollapse" aria-expanded="false" aria-controls="collapseExample"
+            (click)="toggleShowCompleted()">
+            <ng-container *ngIf="showCompletedList; else showHideMessage;">Hide completed items ({{completedCount}})</ng-container>
+            <ng-template #showHideMessage>Show completed items ({{completedCount}})</ng-template>
+          </button>
+        </div>
+      </ng-container>
+      <div class="collapse" [ngClass]="{'show': showCompletedList}" id="completedListCollapse">
+        <div class="list-group">
+          <ng-container *ngFor="let todo of todos">
+            <a href="javascript:void(0);" *ngIf="todo.isCompleted" class="list-group-item list-group-item-action" [ngClass]="todo.id === selectedTodoItem ? 'text-primary' : ''">
+              <div *ngIf="todo.isCompleted">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="markCompleted" value="completed" [checked]="todo.isCompleted ? 'checked': ''" (change)="onCheckboxChecked(todo)">
+                  <label class="form-check-label" for="markCompleted"></label>
+                </div>
+                <div class="d-inline" [ngClass]="todo.isCompleted ? 'strikethrough text-secondary' : ''" (click)="setEditing(todo)">{{ todo.title }}</div>
+                <div class="ps-4 ms-3">
+                  <ng-container *ngIf="tagMode">
+                    <small *ngIf="!tagExistsInTodoTagCollection(todo)" [ngStyle]="{'color': currentTag?.colorCode}" [ngClass]="todo.isCompleted ? 'strikethrough text-secondary': ''">#{{currentTag?.name}} </small>
+                  </ng-container>
+                  <small *ngFor="let tag of todo.tags" [ngStyle]="{'color': tag.colorCode}" [ngClass]="todo.isCompleted ? 'strikethrough text-secondary': ''">#{{tag.name}} </small>
+                </div>
+              </div>
+            </a>
+          </ng-container>
+        </div>
       </div>
   </div>
   <ng-template #addItemMessage>
     <div class="d-flex justify-content-center align-items-center text-secondary" style="height: 100%;">
-      Start by adding a todo item.
-  </div>
+      {{noItemsMessage}}
+    </div>
   </ng-template>
 </div>
 

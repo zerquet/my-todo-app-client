@@ -1,5 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Tag } from 'src/app/models/tag.model';
+import { Todo } from 'src/app/models/todo.model';
 import { TodoList } from 'src/app/models/todolist.model';
 import { TagService } from 'src/app/services/tag.service';
 import { TodoService } from 'src/app/services/todo.service';
@@ -20,6 +21,11 @@ export class SidepanelComponent implements OnInit {
   newTag: string = "";
   selectedTag: number = 0;
   isMenuCollapsed: boolean = false;
+  readonly todayListId: number = -2;
+  readonly completedListId: number = -3;
+  totalDueTodos: number = 0;
+  totalCompletedTodos: number = 0;
+  dueToday: Todo[] = [];
 
   constructor(private todoListService: TodolistService, private todoService: TodoService, private tagService: TagService) {}
 
@@ -55,6 +61,12 @@ export class SidepanelComponent implements OnInit {
     this.getLists();
     this.getTodoCount();
     this.getTags();
+    this.todoService.getDueToday().subscribe(
+      (retrievedDueToday) => {
+        this.dueToday = retrievedDueToday;
+        this.totalDueTodos = retrievedDueToday.length;
+      }
+    )
   }
 
   addList(): void {
@@ -97,6 +109,18 @@ export class SidepanelComponent implements OnInit {
         this.totalTodos = count;
       }
     )
+
+    this.todoService.countCompleted().subscribe(
+      (count: number) => {
+        this.totalCompletedTodos = count;
+      }
+    )
+
+    // this.todoService.countDueToday().subscribe(
+    //   (count: number) => {
+    //     this.totalDueTodos = count;
+    //   }
+    // )
   }
 
   addTag(): void {
@@ -133,6 +157,25 @@ export class SidepanelComponent implements OnInit {
 
   toggleCollapseMenu(): void {
     this.isMenuCollapsed = !this.isMenuCollapsed;
+  }
+
+  onTodayListClicked(): void {
+    //This todoList just serves the purpose of holding the id of either a "Today" id or "Completed" id.
+    const todoListToday: TodoList = {
+      id: this.todayListId,
+      todoItems: []
+    };
+    this.listClicked.emit(todoListToday);
+    this.selectedList = this.todayListId;
+  }
+
+  onCompletedListClicked(): void {
+    const todoListCompleted: TodoList = {
+      id: this.completedListId,
+      todoItems: []
+    };
+    this.listClicked.emit(todoListCompleted);
+    this.selectedList = this.completedListId;
   }
 
 }

@@ -28,6 +28,10 @@ export class ListComponent implements OnInit {
   tagColorOptions: TagColor[] = [];
   editingTag: Tag | null = null;
   sortAlphaOption: string = "asc";
+  showCompletedList: boolean = false;
+  completedCount: number = 0;
+  noItemsMessage: string = "Start by adding a todo item.";
+  showEditPanel: boolean = false;
 
   
   constructor(private todoService: TodoService, private todoListService: TodolistService, private tagService: TagService,
@@ -40,8 +44,12 @@ export class ListComponent implements OnInit {
   @Output() listDeletedCascade = new EventEmitter<number>();
   @Output() tagUpdated = new EventEmitter<Tag>();
   @Output() tagDeleted = new EventEmitter<number>();
+  @Output() todoCompletedStatusChanged = new EventEmitter<number>();
+  @Output() todoAddedToTodayList = new EventEmitter<number>();
+  @Output() todoClickedToggle = new EventEmitter<void>();
 
   ngOnInit(): void {
+    debugger;
     this.loadTodos(undefined);
     this.currentList = "Inbox";
     this.currentListId = undefined;
@@ -54,10 +62,15 @@ export class ListComponent implements OnInit {
         title: this.newTodoItem.trim(),
         todoListId: this.currentListId,
         tags: [],
-        newTags: []
+        newTags: [],
+        isCompleted: false
       };
       if(this.tagMode) {
         todo.newTags.push(this.currentTag?.id!);
+      }
+
+      if(this.currentList === "Today") {
+        todo.dueDate = new Date();
       }
       console.log(todo);
 
@@ -68,6 +81,9 @@ export class ListComponent implements OnInit {
           console.log("Got item ID " + createdTodo.id);
           
           this.todoAdded.emit({listId: this.currentListId, value: 1})
+          if(this.currentList === "Today") {
+            this.todoAddedToTodayList.emit(1);
+          }
         }
       );
 
@@ -76,15 +92,49 @@ export class ListComponent implements OnInit {
   }
 
   setEditing(todo: Todo): void {
-    this.todoClicked.emit(todo);
-    this.selectedTodoItem = todo.id;
+    //If same todo, but edit panel hidden
+    if(this.selectedTodoItem === todo.id && !this.showEditPanel) {
+      this.todoClicked.emit(todo);
+      this.showEditPanel = true;
+    }
+    //If same todo, but edit panel displayed
+    else if(this.selectedTodoItem === todo.id && this.showEditPanel) {
+      this.showEditPanel = false;
+      this.todoClickedToggle.emit();
+    }
+    //If clicked on different todo
+    else if(this.selectedTodoItem !== todo.id) {
+      this.todoClicked.emit(todo);
+      this.showEditPanel = true;
+    }
+    this.selectedTodoItem = todo.id; //next, need to fix that delete list cascade issue. 
   }
 
   updateList(todo: Todo): void {
-    debugger;
     //Todo was removed from current list
     if((todo.todoListId !== this.currentListId) && this.currentList != "Inbox") {
-      this.todos = this.todos.filter(i => i.id !== todo.id);
+      if(this.currentList === "Today") {
+        let today = new Date();
+        if (todo.dueDate !== undefined) {
+          let todoDueDate = new Date(todo.dueDate); //Redundant Date() obj?
+          let datesAreSame = (todoDueDate.getMonth() + 1) === (today.getMonth() + 1) 
+                            && todoDueDate.getDate() === today.getDate() 
+                            && todoDueDate.getFullYear() === today.getFullYear(); 
+
+          if(!datesAreSame) {
+            this.todos = this.todos.filter(i => i.id !== todo.id);
+          }
+        }
+      } 
+      //Run same check for 'Completed'. Rn if you save changes on an unchanged todo item, it removes it from list. 
+      else if(this.currentList === "Completed") {
+        if(!todo.isCompleted) {
+          this.todos = this.todos.filter(i => i.id !== todo.id);
+        }
+      }
+      else {
+        this.todos = this.todos.filter(i => i.id !== todo.id);
+      }
     }
     const index: number = this.todos.findIndex(i => i.id == todo.id);
     if(index !== -1) {
@@ -96,24 +146,91 @@ export class ListComponent implements OnInit {
   }
 
   deleteTodo(id: number):void {
+    const todo = this.todos.find(t => t.id === id);
+    if(todo?.isCompleted) {
+      this.completedCount -= 1;
+    }
     this.todos = this.todos.filter(i => i.id !== id);
   }
 
   loadTodos(listId: number | undefined): void {
+    this.completedCount = 0;
+    this.showCompletedList = false;
     if(listId === undefined) {
       this.todoService.getTodos().subscribe(
         (retrievedTodos: Todo[]) => {
           this.todos = retrievedTodos;
+          //Because API deletes tags on each update req, we need to set new tags, which are the existing ones in this use case of updating just the IsCompleted property. 
+          this.todos.forEach(t => {
+            t.newTags = t.tags.map(tag => tag.id!);
+
+            //In same loop, get completed count
+            if(t.isCompleted) {
+              this.completedCount = this.completedCount + 1;
+            }
+          })
   
           console.log("Retrieved todos")
         }
       )
     } 
+    //Filter todos by due date
+    else if (listId === -2) {
+      this.todoService.getTodos().subscribe(
+        (retrievedTodos: Todo[]) => {
+          //Only get todos due today
+          this.todos = retrievedTodos.filter(t => {
+            let today = new Date();
+            if (t.dueDate === undefined) {
+              return false;
+            }
+            let todoDueDate = new Date(t.dueDate)
+            return (todoDueDate.getMonth() + 1) === (today.getMonth() + 1) 
+                    && todoDueDate.getDate() === today.getDate() 
+                    && todoDueDate.getFullYear() === today.getFullYear(); 
+          })
+
+          this.todos.forEach(t => {
+            t.newTags = t.tags.map(tag => tag.id!);
+
+            if(t.isCompleted) {
+              this.completedCount = this.completedCount + 1;
+            }
+          })
+  
+          console.log("Retrieved todos")
+        }
+      )
+    }
+    else if(listId === -3) {
+      this.todoService.getTodos().subscribe(
+        (retrievedTodos: Todo[]) => {
+          //Only get completed todos
+          this.todos = retrievedTodos.filter(t => t.isCompleted)
+
+          this.todos.forEach(t => {
+            t.newTags = t.tags.map(tag => tag.id!);
+
+            if(t.isCompleted) {
+              this.completedCount = this.completedCount + 1;
+            }
+          })
+  
+          console.log("Retrieved todos")
+        }
+      )
+    }
     else {
       this.todoListService.getList(listId).subscribe(
         (retrievedList) => {
           this.todos = retrievedList.todoItems;
+          this.todos.forEach(t => {
+            t.newTags = t.tags.map(tag => tag.id!);
 
+            if(t.isCompleted) {
+              this.completedCount = this.completedCount + 1;
+            }
+          })
           console.log(`Retrieved list ${retrievedList.title}`);
         }
       )
@@ -122,10 +239,19 @@ export class ListComponent implements OnInit {
   }
 
   loadTodosByTag(tagId: number): void {
+    this.completedCount = 0;
+    this.showCompletedList = false;
     this.tagService.getTag(tagId).subscribe(
       (retrievedTag) => {
-        debugger;
         this.todos = retrievedTag.todoItems;
+        this.todos.forEach(t => {
+          t.newTags = t.tags.map(tag => tag.id!);
+          t.newTags.push(this.currentTag!.id!);
+
+          if(t.isCompleted) {
+            this.completedCount = this.completedCount + 1;
+          }
+        })
       }
     )
   }
@@ -185,7 +311,6 @@ export class ListComponent implements OnInit {
   }
 
   updateTag(): void {
-    debugger;
     if(this.editingTag?.name!.trim() !== "") {
       this.tagService.updateTag(this.editingTag!).subscribe(
         () => {
@@ -210,7 +335,8 @@ export class ListComponent implements OnInit {
   }
 
   tagExistsInTodoTagCollection(todo: Todo): boolean {
-    return todo.tags.includes(this.currentTag!);
+    
+    return todo.tags.some(t => t.id === this.currentTag!.id);
   }
 
   toggleSortAlpha(): void {
@@ -232,8 +358,38 @@ export class ListComponent implements OnInit {
         return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
       });
 
-    }
-    
+    } 
+  }
+
+  onCheckboxChecked(todo: Todo): void {
+    let prevCompletedVal = todo.isCompleted;
+    todo.isCompleted = !todo.isCompleted;
+    this.todoService.updateTodo(todo).subscribe(
+      () => {
+        //Update completed count
+        if(todo.isCompleted === true) {
+          this.completedCount += 1;
+        } else {
+          this.completedCount -= 1;
+        }
+
+        //Increment count if we checked as "Completed", otherwise, subtract -1 from current count on SidepanelComponent
+        if(!prevCompletedVal && todo.isCompleted) {
+          this.todoCompletedStatusChanged.emit(1);
+        }
+        else if(prevCompletedVal && !todo.isCompleted) {
+          this.todoCompletedStatusChanged.emit(-1);
+        }
+      }
+    )
+  }
+
+  toggleShowCompleted(): void {
+    this.showCompletedList = !this.showCompletedList;
+  }
+
+  resetNoItemMessage(): void {
+    this.noItemsMessage = "Start by adding a todo item.";
   }
 
   loadTagColors(): void {

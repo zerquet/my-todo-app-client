@@ -7,4 +7,6 @@ export interface Todo {
     todoListId?: number;
     tags: Tag[];
     newTags: number[];
+    dueDate?: Date,
+    isCompleted: boolean
 }

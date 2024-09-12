@@ -10,12 +10,15 @@
     <!--List Section-->
     <div class="border-end" [ngClass]="editChildIsNull ? 'col pe-4' : !editChildIsNull && sideMenuIsCollapsed ? 'col-5' : 'col-4'">
       <app-list (todoClicked)="onTodoClicked($event)" (todoAdded)="onTodoAddedOrDeleted($event)" (listTitleUpdated)="onListTitleUpdated($event)" (listDeleted)="onListDeleted($event)"
-                (listDeletedCascade)="onListDeletedCascade($event)" (tagUpdated)="onTagUpdated($event)" (tagDeleted)="onTagDeleted($event)">
+                (listDeletedCascade)="onListDeletedCascade($event)" (tagUpdated)="onTagUpdated($event)" (tagDeleted)="onTagDeleted($event)" 
+                (todoCompletedStatusChanged)="onTodoCompletedStatusChanged($event)" (todoAddedToTodayList)="onTodoAddedToTodayList($event)" (todoClickedToggle)="onTodoClickedToggle()">
       </app-list>
     </div>
   
     <!--Edit Section-->
     <div [ngClass]="editChildIsNull ? 'd-none' : !editChildIsNull && sideMenuIsCollapsed ? 'col-5' : 'col-4'">
-      <app-edit (todoUpdated)="onTodoUpdated($event)" (todoDeleted)="onTodoDeleted($event)" (todoDeleted2)="onTodoAddedOrDeleted($event)" (todoListChanged)="onTodoListChanged($event)"></app-edit>
+      <app-edit (todoUpdated)="onTodoUpdated($event)" (todoDeleted)="onTodoDeleted($event)" (todoDeleted2)="onTodoAddedOrDeleted($event)" (todoListChanged)="onTodoListChanged($event)"
+                (todoDueDateChanged)="onTodoDueDateChanged($event)">
+      </app-edit>
     </div>
 </div>

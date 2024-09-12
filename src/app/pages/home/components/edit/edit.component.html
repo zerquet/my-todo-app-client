@@ -11,6 +11,12 @@
             <option [ngValue]="null">None</option>
             <option *ngFor="let list of availableLists" [value]="list.id">{{list.title}}</option>
         </select>
+        <div class="row">
+            <div class="col-auto">
+                <label for="dueDate" class="form-label">Due Date</label>
+                <input [(ngModel)]="editingTodo!.dueDate" id="dueDate" class="form-control mb-3" type="datetime-local">
+            </div>
+        </div>
         <label for="tags" class="form-label">Tags</label>
         <div class="row mb-3">
             <div *ngFor="let addedTag of addedTags" class="col-auto px-1">
